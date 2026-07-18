@@ -1,5 +1,23 @@
 # AgInTi Spectrum Studio
 
+[English](README.md) · [العربية](i18n/README.ar.md) · [Español](i18n/README.es.md) · [Français](i18n/README.fr.md) · [日本語](i18n/README.ja.md) · [한국어](i18n/README.ko.md) · [Tiếng Việt](i18n/README.vi.md) · [中文 (简体)](i18n/README.zh-Hans.md) · [中文（繁體）](i18n/README.zh-Hant.md) · [Deutsch](i18n/README.de.md) · [Русский](i18n/README.ru.md)
+
+<p align="center">
+  <img src="docs/assets/lazyingart-logo-white.jpg" width="108" alt="LazyingArt panda logo">
+</p>
+
+<p align="center">
+  <strong>High-rate C12880MA acquisition, adaptive exposure, and agent-ready spectral instrumentation.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/lachlanchen/AgInTi-Spectrometer"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-AgInTi--Spectrometer-111827?logo=github"></a>
+  <a href="https://lazying.art"><img alt="LazyingArt" src="https://img.shields.io/badge/LazyingArt-Instrument-76B947"></a>
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white">
+</p>
+
+![AgInTi Spectrometer product prototype](docs/assets/aginti-spectrometer-hero.png)
+
 An independent acquisition and visualization application for the Hamamatsu C12880MA and its supplied USB controller. It reproduces the working vendor transport while keeping acquisition independent from GUI refresh, validating every 288-pixel frame, recording raw spectra, and exposing diagnostics for later system integration.
 
 ## Verified hardware protocol
@@ -56,6 +74,14 @@ capture and exposes exposure, scaling, smoothing, trigger, averaging, dark
 reference, and recording controls. The desktop and web applications share the
 same API state, so a change in either interface appears in the other.
 
+## Live Web Workbench
+
+![AgInTi Spectrum Studio live web interface](docs/assets/spectrum-studio-webapp.png)
+
+This capture shows the current wavelength-anchored under-curve color mapping
+and approximately 440 validated hardware frames per second. Web rendering
+remains capped independently, so visualization does not throttle acquisition.
+
 ## Features
 
 - Active `c12880` identity probing, so selection does not depend on a guessed VID/PID or COM number.
@@ -76,4 +102,14 @@ same API state, so a change in either interface appears in the other.
 
 Hamamatsu supplies wavelength-conversion coefficients on each sensor's individual test result sheet. Until those coefficients are entered, the app uses a clearly marked nominal linear 340-850 nm axis. This is suitable for connection testing and qualitative visualization, not calibrated peak metrology.
 
-See [references/protocol.md](references/protocol.md) for the recovered protocol and [references/vendor-recovery.md](references/vendor-recovery.md) for the local source-recovery workflow.
+See [references/protocol.md](references/protocol.md) for the recovered protocol,
+[references/vendor-recovery.md](references/vendor-recovery.md) for the local
+source-recovery workflow, and
+[references/wavelength-rendering-and-fps-limits.md](references/wavelength-rendering-and-fps-limits.md)
+for the rendering and throughput analysis.
+
+## Support
+
+[![Donate](https://img.shields.io/badge/Donate-LazyingArt-0EA5E9?style=for-the-badge)](https://chat.lazying.art/donate)
+[![PayPal](https://img.shields.io/badge/PayPal-RongzhouChen-00457C?style=for-the-badge&logo=paypal)](https://paypal.me/RongzhouChen)
+[![Stripe](https://img.shields.io/badge/Stripe-Donate-635BFF?style=for-the-badge&logo=stripe)](https://buy.stripe.com/aFadR8gIaflgfQV6T4fw400)
