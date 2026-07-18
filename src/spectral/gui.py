@@ -312,18 +312,22 @@ class SpectrumWindow(QtWidgets.QMainWindow):
         spectrum_gradient.setCoordinateMode(
             QtGui.QGradient.CoordinateMode.ObjectBoundingMode
         )
-        for position, rgba in [
-            (0.00, (83, 50, 145, 32)),
-            (0.08, (108, 60, 196, 78)),
-            (0.20, (45, 83, 224, 92)),
-            (0.30, (26, 174, 222, 92)),
-            (0.36, (41, 190, 112, 94)),
-            (0.48, (239, 205, 56, 98)),
-            (0.55, (246, 136, 45, 98)),
-            (0.65, (225, 55, 48, 94)),
-            (0.86, (137, 35, 52, 62)),
-            (1.00, (81, 31, 45, 28)),
+        gradient_min_nm = float(self.wavelengths[0])
+        gradient_span_nm = max(float(self.wavelengths[-1]) - gradient_min_nm, 1.0)
+        for wavelength_nm, rgba in [
+            (340, (48, 20, 68, 18)),
+            (380, (91, 46, 155, 72)),
+            (440, (45, 70, 220, 98)),
+            (490, (0, 185, 242, 104)),
+            (510, (0, 202, 103, 106)),
+            (580, (250, 217, 0, 108)),
+            (645, (245, 45, 0, 100)),
+            (700, (132, 0, 0, 66)),
+            (850, (42, 10, 18, 16)),
         ]:
+            position = min(
+                1.0, max(0.0, (wavelength_nm - gradient_min_nm) / gradient_span_nm)
+            )
             spectrum_gradient.setColorAt(position, QtGui.QColor(*rgba))
         self.spectrum_brush = QtGui.QBrush(spectrum_gradient)
         self.curve = self.plot.plot(

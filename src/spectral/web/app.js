@@ -6,10 +6,16 @@ let instrument = null;
 let spectrum = null;
 let toastTimer = null;
 
-const colors = [
-  [0.00, "#744ac2"], [0.08, "#754ed0"], [0.20, "#356ddd"],
-  [0.30, "#20b5d0"], [0.36, "#2dbb73"], [0.48, "#ebcb37"],
-  [0.55, "#ef8732"], [0.65, "#df493f"], [0.86, "#8b2738"], [1.00, "#55202f"],
+const wavelengthColors = [
+  [340, "rgba(48,20,68,.18)"],
+  [380, "rgba(91,46,155,.72)"],
+  [440, "rgba(45,70,220,.98)"],
+  [490, "rgba(0,185,242,1)"],
+  [510, "rgba(0,202,103,1)"],
+  [580, "rgba(250,217,0,1)"],
+  [645, "rgba(245,45,0,.98)"],
+  [700, "rgba(132,0,0,.66)"],
+  [850, "rgba(42,10,18,.16)"],
 ];
 
 function toast(message, bad = false) {
@@ -75,9 +81,13 @@ function updateStatus(state) {
   $("statusLine").textContent = `API connected / raw acquisition ${Math.round(state.acquisition?.fps || 0)} fps / web render 20 fps`;
 }
 
-function wavelengthGradient(context, left, right) {
+function wavelengthGradient(context, left, right, minimumNm, maximumNm) {
   const gradient = context.createLinearGradient(left, 0, right, 0);
-  colors.forEach(([position, color]) => gradient.addColorStop(position, color));
+  const span = Math.max(1, maximumNm - minimumNm);
+  wavelengthColors.forEach(([wavelengthNm, color]) => {
+    const position = Math.min(1, Math.max(0, (wavelengthNm - minimumNm) / span));
+    gradient.addColorStop(position, color);
+  });
   return gradient;
 }
 
@@ -147,7 +157,9 @@ function drawSpectrum() {
     ctx.lineTo(xFor(wavelengths[wavelengths.length-1]), yFor(yMin));
     ctx.closePath();
     ctx.globalAlpha = .42;
-    ctx.fillStyle = wavelengthGradient(ctx, margin.left, margin.left+plotW);
+    ctx.fillStyle = wavelengthGradient(
+      ctx, margin.left, margin.left + plotW, xMin, xMax
+    );
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.beginPath();
