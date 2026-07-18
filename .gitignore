@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+
+# Raw vendor material is retained locally but is not source-controlled.
+references/vendor/raw/
+references/vendor/*.exe
+references/vendor/*.zip
+references/vendor/*.rar
+
+# Measurements may contain experimental or confidential data.
+measurements/*
+!measurements/.gitkeep
+

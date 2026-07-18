@@ -1,0 +1,7 @@
+{
+  "mode": "linear",
+  "coefficients": [340.0, 850.0],
+  "pixel_origin": 0.0,
+  "label": "nominal linear 340-850 nm"
+}
+
