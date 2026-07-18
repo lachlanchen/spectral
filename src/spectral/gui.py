@@ -752,6 +752,9 @@ class SpectrumWindow(QtWidgets.QMainWindow):
                 "valid_frames": self.valid_frames,
                 "invalid_frames": self.invalid_frames,
                 "render_fps": 30,
+                "averaging": self.averaging.value(),
+                "trigger": str(self.trigger_mode.currentData()),
+                "output_mask": self.output_mask.value(),
             },
             "frame": None if frame is None else {
                 "sequence": frame.sequence,
@@ -759,6 +762,8 @@ class SpectrumWindow(QtWidgets.QMainWindow):
                 "source": frame.source,
             },
             "spectrum": spectrum,
+            "dark_reference": self.dark_reference is not None,
+            "recording": self.record_button.isChecked(),
         }
         state.update(extra)
         self.control_bridge.update_state(state)
@@ -807,7 +812,42 @@ class SpectrumWindow(QtWidgets.QMainWindow):
                 raise ValueError("mode must be raw, fast, or smooth")
             self.display_smoothing.setCurrentIndex(modes[mode])
             return {"mode": mode}
+        if action == "set_acquisition":
+            averaging = int(payload.get("averaging", self.averaging.value()))
+            trigger = str(payload.get("trigger", self.trigger_mode.currentData()))
+            output_mask = int(payload.get("output_mask", self.output_mask.value()))
+            if not 1 <= averaging <= 64:
+                raise ValueError("averaging must be 1-64")
+            if trigger not in ("internal", "external"):
+                raise ValueError("trigger must be internal or external")
+            if not 0 <= output_mask <= 3:
+                raise ValueError("output_mask must be 0-3")
+            self.averaging.setValue(averaging)
+            self.trigger_mode.setCurrentIndex(self.trigger_mode.findData(trigger))
+            self.output_mask.setValue(output_mask)
+            return {"averaging": averaging, "trigger": trigger, "output_mask": output_mask}
+        if action == "capture_dark":
+            if self.current_frame is None:
+                raise RuntimeError("no live frame is available")
+            self.capture_dark()
+            return {"dark_reference": True}
+        if action == "clear_dark":
+            self.clear_dark()
+            return {"dark_reference": False}
+        if action == "set_recording":
+            enabled = bool(payload["enabled"])
+            self.record_button.setChecked(enabled)
+            return {"recording": enabled}
         raise ValueError(f"unknown control action: {action}")
+
+    def _publish_spectrum_data(self, frame: SpectrumFrame, counts: np.ndarray) -> None:
+        self.control_bridge.update_spectrum({
+            "sequence": frame.sequence,
+            "timestamp_ns": frame.timestamp_ns,
+            "exposure_ms": frame.exposure_ms,
+            "wavelengths_nm": self.wavelengths.tolist(),
+            "counts": counts.tolist(),
+        })
 
     def _process_control_requests(self) -> None:
         for command in self.control_bridge.drain():
@@ -860,6 +900,7 @@ class SpectrumWindow(QtWidgets.QMainWindow):
             source="vendor-reference",
         )
         self._render(self.current_frame, self.current_counts)
+        self._publish_spectrum_data(self.current_frame, self.current_counts)
         self.reference_note.setText("VENDOR REFERENCE / NOMINAL AXIS")
         self.reference_note.show()
         self.status_pill.setText("REFERENCE")
@@ -929,6 +970,7 @@ class SpectrumWindow(QtWidgets.QMainWindow):
         display_counts = self._filter_for_display(counts)
         self.current_display_counts = display_counts
         self._render(frame, display_counts)
+        self._publish_spectrum_data(frame, display_counts)
         self._publish_control_state()
         self.reference_note.hide()
         self.plot_caption.setText(
@@ -1033,11 +1075,14 @@ def run_gui(
     app.setApplicationName("AgInTi Spectrum Studio")
     app.setOrganizationName("LazyingArt")
     app.setStyle("Fusion")
+    icon_path = resources.files("spectral").joinpath("resources", "icon.svg")
+    app.setWindowIcon(QtGui.QIcon(str(icon_path)))
     window = SpectrumWindow(
         requested_port=requested_port,
         demo_only=demo_only,
         api_host=api_host,
         api_port=api_port,
     )
+    window.setWindowIcon(QtGui.QIcon(str(icon_path)))
     window.show()
     return app.exec()

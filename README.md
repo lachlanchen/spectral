@@ -50,6 +50,12 @@ Direct HTTP clients can use `GET /api/v1/status` and POST JSON to
 `/api/v1/y-scale/auto`, `/api/v1/y-scale/fit`, `/api/v1/y-scale/limits`, and
 `/api/v1/smoothing`.
 
+The same live instrument is available as a responsive web application at
+`http://127.0.0.1:8766/`. It renders the latest spectrum independently of raw
+capture and exposes exposure, scaling, smoothing, trigger, averaging, dark
+reference, and recording controls. The desktop and web applications share the
+same API state, so a change in either interface appears in the other.
+
 ## Features
 
 - Active `c12880` identity probing, so selection does not depend on a guessed VID/PID or COM number.
@@ -60,6 +66,7 @@ Direct HTTP clients can use `GET /api/v1/status` and POST JSON to
 - Continuous or one-shot Y-range fitting, plus editable fixed display limits.
 - Wavelength-colored under-curve shading and display-only low-lag smoothing.
 - Local HTTP/JSON control and a CLI client for agents and external applications.
+- A responsive Canvas web instrument and shared spectral-wave application icon.
 - Internal/software and external/TTL trigger modes.
 - Integration-time control, frame averaging, dark subtraction, CSV recording, and PNG export.
 - Nominal 340-850 nm mapping with support for per-device wavelength coefficients.

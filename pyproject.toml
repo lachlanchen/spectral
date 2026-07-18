@@ -29,5 +29,4 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-spectral = ["resources/*.csv", "resources/*.json"]
-
+spectral = ["resources/*.csv", "resources/*.json", "resources/*.svg", "web/*.html", "web/*.css", "web/*.js"]

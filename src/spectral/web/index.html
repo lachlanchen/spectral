@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a35">
+  <title>AgInTi Spectrum Studio</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/icon.svg" alt="" class="brand-icon">
+      <div>
+        <p class="eyebrow">AGINTI INSTRUMENTS</p>
+        <h1>Spectrum Studio</h1>
+      </div>
+    </div>
+    <div class="connection-cluster">
+      <span id="portLabel" class="mono muted">C12880MA / scanning</span>
+      <span id="livePill" class="live-pill waiting"><i></i> Waiting</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="spectrum-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">LIVE SPECTRAL RESPONSE</p>
+          <h2>Calibrated signal canvas</h2>
+        </div>
+        <button id="exportButton" class="quiet-button">Export PNG</button>
+      </div>
+      <div id="canvasWrap" class="canvas-wrap">
+        <canvas id="spectrumCanvas"></canvas>
+        <div id="tooltip" class="tooltip" hidden></div>
+      </div>
+      <div class="plot-footer">
+        <span id="frameLabel">No validated frame</span>
+        <span>Nominal 340-850 nm axis</span>
+        <span id="saturationLabel">Saturation --</span>
+      </div>
+    </section>
+
+    <aside class="instrument-panel">
+      <section class="metrics-grid" aria-label="Live metrics">
+        <article class="metric"><span>Peak</span><strong id="peakMetric">-- nm</strong></article>
+        <article class="metric coral"><span>Peak signal</span><strong id="signalMetric">--</strong></article>
+        <article class="metric blue"><span>Integral</span><strong id="integralMetric">--</strong></article>
+        <article class="metric gold"><span>Acquisition</span><strong id="fpsMetric">-- fps</strong></article>
+      </section>
+
+      <section class="control-card">
+        <div class="control-title"><span>Exposure</span><small>3 us - 1 s</small></div>
+        <div class="compound-row">
+          <input id="exposureValue" type="number" min="3" step="1" value="10">
+          <select id="exposureUnit"><option value="us">us</option><option value="ms">ms</option></select>
+          <button id="applyExposure">Apply</button>
+        </div>
+        <div class="split-row">
+          <label class="switch-label"><input id="autoExposure" type="checkbox"><span class="switch"></span>Auto exposure</label>
+          <button id="meterExposure" class="compact-button">Meter once</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="control-title"><span>Display range</span><small>ADC counts</small></div>
+        <div class="split-row">
+          <label class="switch-label"><input id="autoY" type="checkbox" checked><span class="switch"></span>Auto Y scale</label>
+          <button id="fitY" class="compact-button">Fit once</button>
+        </div>
+        <div class="compound-row limits-row">
+          <input id="yMin" type="number" step="100" value="0">
+          <span>to</span>
+          <input id="yMax" type="number" step="100" value="65535">
+          <button id="applyY">Set</button>
+        </div>
+
+        <div class="divider"></div>
+        <label class="field-row"><span>Display filter</span><select id="smoothing"><option value="raw">Raw / no filter</option><option value="fast">Fast / low lag</option><option value="smooth">Smooth</option></select></label>
+        <label class="field-row"><span>Frame average</span><input id="averaging" type="number" min="1" max="64" value="1"></label>
+        <label class="field-row"><span>Trigger</span><select id="trigger"><option value="internal">Internal / software</option><option value="external">External / TTL</option></select></label>
+        <label class="field-row"><span>OUT2/OUT3 mask</span><input id="outputMask" type="number" min="0" max="3" value="1"></label>
+        <button id="applyAcquisition" class="wide-button">Apply acquisition settings</button>
+      </section>
+
+      <section class="action-grid">
+        <button id="captureDark">Capture dark</button>
+        <button id="clearDark">Clear dark</button>
+        <button id="recordButton" class="wide">Record raw CSV</button>
+      </section>
+      <p id="statusLine" class="status-line">Connecting to the local instrument API...</p>
+    </aside>
+  </main>
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

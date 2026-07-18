@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from importlib import resources
 import json
 import queue
 import threading
@@ -27,6 +28,9 @@ class ControlBridge:
         self._commands: queue.Queue[ControlRequest] = queue.Queue()
         self._state_lock = threading.Lock()
         self._state: dict[str, Any] = {"state": "starting"}
+        self._spectrum: dict[str, Any] = {
+            "sequence": -1, "wavelengths_nm": [], "counts": []
+        }
 
     def request(
         self, action: str, payload: dict[str, Any] | None = None, timeout: float = 3.0
@@ -55,6 +59,14 @@ class ControlBridge:
         with self._state_lock:
             return self._state.copy()
 
+    def update_spectrum(self, spectrum: dict[str, Any]) -> None:
+        with self._state_lock:
+            self._spectrum = spectrum.copy()
+
+    def spectrum(self) -> dict[str, Any]:
+        with self._state_lock:
+            return self._spectrum.copy()
+
 
 class _ControlHttpServer(ThreadingHTTPServer):
     allow_reuse_address = True
@@ -70,6 +82,10 @@ class ControlApiServer:
         "/api/v1/y-scale/fit": "fit_y",
         "/api/v1/y-scale/limits": "set_y_limits",
         "/api/v1/smoothing": "set_smoothing",
+        "/api/v1/acquisition": "set_acquisition",
+        "/api/v1/dark/capture": "capture_dark",
+        "/api/v1/dark/clear": "clear_dark",
+        "/api/v1/recording": "set_recording",
     }
 
     def __init__(self, bridge: ControlBridge, host: str, port: int) -> None:
@@ -82,6 +98,15 @@ class ControlApiServer:
     def start(self) -> None:
         bridge = self.bridge
         routes = self.ROUTES
+        web_root = resources.files("spectral").joinpath("web")
+        icon = resources.files("spectral").joinpath("resources", "icon.svg")
+        assets = {
+            "/": ("text/html; charset=utf-8", web_root.joinpath("index.html").read_bytes()),
+            "/index.html": ("text/html; charset=utf-8", web_root.joinpath("index.html").read_bytes()),
+            "/styles.css": ("text/css; charset=utf-8", web_root.joinpath("styles.css").read_bytes()),
+            "/app.js": ("text/javascript; charset=utf-8", web_root.joinpath("app.js").read_bytes()),
+            "/icon.svg": ("image/svg+xml", icon.read_bytes()),
+        }
 
         class Handler(BaseHTTPRequestHandler):
             server_version = "AgInTiSpectrumAPI/1.0"
@@ -106,6 +131,14 @@ class ControlApiServer:
                     raise ValueError("JSON request body must be an object")
                 return value
 
+            def _send_asset(self, content_type: str, content: bytes) -> None:
+                self.send_response(HTTPStatus.OK)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "no-cache")
+                self.end_headers()
+                self.wfile.write(content)
+
             def do_OPTIONS(self) -> None:  # noqa: N802
                 self._send(HTTPStatus.NO_CONTENT, {})
 
@@ -113,6 +146,10 @@ class ControlApiServer:
                 path = urlparse(self.path).path.rstrip("/") or "/"
                 if path in ("/health", "/api/v1/status"):
                     self._send(HTTPStatus.OK, {"ok": True, "status": bridge.status()})
+                elif path == "/api/v1/spectrum":
+                    self._send(HTTPStatus.OK, {"ok": True, "spectrum": bridge.spectrum()})
+                elif path in assets:
+                    self._send_asset(*assets[path])
                 else:
                     self._send(HTTPStatus.NOT_FOUND, {"ok": False, "error": "not found"})
 
@@ -179,4 +216,3 @@ def api_request(
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"API {exc.code}: {detail}") from exc
-
