@@ -194,6 +194,7 @@ function drawSpectrum() {
   ctx.restore();
 
   if (instrument?.state === "disconnected" || instrument?.frame?.stale) {
+    const fault = instrument?.fault;
     ctx.save();
     ctx.fillStyle = "rgba(255,253,248,.74)";
     ctx.fillRect(margin.left, margin.top, plotW, plotH);
