@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aginti-c12880"
+version = "0.2.0"
+description = "Host SDK for the AgInTi C12880MA clean-room firmware"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "pyserial>=3.5"]
+
+[project.scripts]
+aginti-c12880 = "aginti_c12880.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["aginti_c12880"]
+
