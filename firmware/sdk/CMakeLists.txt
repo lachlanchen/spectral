@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(aginti_c12880_firmware VERSION 0.2.0 LANGUAGES C ASM)
+project(aginti_c12880_firmware VERSION 0.3.0 LANGUAGES C ASM)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -81,6 +81,7 @@ target_include_directories(aginti_c12880_h743 SYSTEM PRIVATE
 
 target_compile_definitions(aginti_c12880_h743 PRIVATE
   STM32H743xx USE_HAL_DRIVER HSE_VALUE=25000000U
+  AGINTI_PERFORMANCE_ADC=1
   $<$<STREQUAL:${AGINTI_CAPTURE_ENGINE},DMA>:AGINTI_CAPTURE_DMA=1>
   $<$<STREQUAL:${AGINTI_CAPTURE_ENGINE},DIRECT>:AGINTI_CAPTURE_DMA=0>)
 
@@ -108,6 +109,59 @@ add_custom_command(TARGET aginti_c12880_h743 POST_BUILD
   COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:aginti_c12880_h743>
           ${CMAKE_CURRENT_BINARY_DIR}/aginti_c12880_h743.bin
   COMMAND ${CMAKE_SIZE} $<TARGET_FILE:aginti_c12880_h743>
+  VERBATIM)
+
+add_executable(aginti_c12880_reconstruction_h743 EXCLUDE_FROM_ALL
+  src/c12880.c
+  src/c12880_protocol.c
+  reconstruction_h743/src/main.c
+  stm32h7/src/c12880_board.c
+  stm32h7/src/c12880_usb.c
+  stm32h7/src/usbd_conf.c
+  stm32h7/src/usbd_desc.c
+  stm32h7/src/stm32h7xx_it.c
+  stm32h7/src/syscalls.c
+  ${STM32_CMSIS_DEVICE_ROOT}/Source/Templates/system_stm32h7xx.c
+  ${STM32_CMSIS_DEVICE_ROOT}/Source/Templates/gcc/startup_stm32h743xx.s
+  ${HAL_SOURCES}
+  ${USB_SOURCES})
+
+target_include_directories(aginti_c12880_reconstruction_h743 PRIVATE
+  include
+  stm32h7/include)
+target_include_directories(aginti_c12880_reconstruction_h743 SYSTEM PRIVATE
+  ${STM32_HAL_ROOT}/Inc
+  ${STM32_HAL_ROOT}/Inc/Legacy
+  ${STM32_CMSIS_DEVICE_ROOT}/Include
+  ${CMSIS_CORE_ROOT}/CMSIS/Core/Include
+  ${STM32_USB_DEVICE_ROOT}/Core/Inc
+  ${STM32_USB_DEVICE_ROOT}/Class/CDC/Inc)
+target_compile_definitions(aginti_c12880_reconstruction_h743 PRIVATE
+  STM32H743xx USE_HAL_DRIVER HSE_VALUE=25000000U
+  AGINTI_CAPTURE_DMA=0 AGINTI_PERFORMANCE_ADC=0)
+target_compile_options(aginti_c12880_reconstruction_h743 PRIVATE
+  -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard
+  -ffunction-sections -fdata-sections -fno-common
+  -Wall -Wextra -Wshadow -Wconversion -Wdouble-promotion
+  $<$<CONFIG:Debug>:-Og;-g3>
+  $<$<NOT:$<CONFIG:Debug>>:-O3;-g1>)
+target_link_options(aginti_c12880_reconstruction_h743 PRIVATE
+  -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard
+  -T${CMAKE_CURRENT_SOURCE_DIR}/stm32h7/linker/STM32H743II_FLASH.ld
+  -Wl,--gc-sections
+  -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/aginti_c12880_reconstruction_h743.map
+  -Wl,--print-memory-usage
+  --specs=nano.specs --specs=nosys.specs)
+target_link_libraries(aginti_c12880_reconstruction_h743 PRIVATE m c)
+set_target_properties(aginti_c12880_reconstruction_h743 PROPERTIES SUFFIX ".elf")
+add_custom_command(TARGET aginti_c12880_reconstruction_h743 POST_BUILD
+  COMMAND ${CMAKE_OBJCOPY} -O ihex
+          $<TARGET_FILE:aginti_c12880_reconstruction_h743>
+          ${CMAKE_CURRENT_BINARY_DIR}/aginti_c12880_reconstruction_h743.hex
+  COMMAND ${CMAKE_OBJCOPY} -O binary
+          $<TARGET_FILE:aginti_c12880_reconstruction_h743>
+          ${CMAKE_CURRENT_BINARY_DIR}/aginti_c12880_reconstruction_h743.bin
+  COMMAND ${CMAKE_SIZE} $<TARGET_FILE:aginti_c12880_reconstruction_h743>
   VERBATIM)
 
 add_executable(aginti_dual_h7_coordinator EXCLUDE_FROM_ALL

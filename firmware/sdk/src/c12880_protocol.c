@@ -16,6 +16,11 @@ static uint32_t read_le32(const uint8_t *p) {
          ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);
 }
 
+static uint32_t read_be32(const uint8_t *p) {
+  return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) |
+         ((uint32_t)p[2] << 8) | (uint32_t)p[3];
+}
+
 static void write_le16(uint8_t *p, uint16_t value) {
   p[0] = (uint8_t)value;
   p[1] = (uint8_t)(value >> 8);
@@ -99,6 +104,20 @@ static void parse_available(aginti_protocol_parser_t *parser) {
     }
 
     if (parser->input[0] == 0xFFU) {
+      if (parser->input_bytes < 2U) return;
+      if ((parser->input[1] == 0x09U) &&
+          ((parser->input_bytes == 2U) ||
+           ((parser->input_bytes >= 3U) &&
+            ((parser->input[2] == 0xFFU) ||
+             (parser->input[2] == 0x04U) ||
+             (parser->input[2] == 'A'))))) {
+        aginti_command_t command = {0};
+        command.opcode = 0x09U;
+        command.kind = AGINTI_CMD_LEGACY_EEPROM_READ;
+        (void)queue_push(parser, &command);
+        discard_prefix(parser, 2U);
+        continue;
+      }
       if (parser->input_bytes < 9U) return;
       if ((parser->input[7] != 0x0DU) || (parser->input[8] != 0x0AU)) {
         ++parser->malformed_packets;
@@ -108,15 +127,18 @@ static void parse_available(aginti_protocol_parser_t *parser) {
       aginti_command_t command = {0};
       command.opcode = parser->input[1];
       command.output_mode = parser->input[2];
-      command.exposure_clocks = read_le32(&parser->input[3]);
+      command.exposure_clocks = read_be32(&parser->input[3]);
       switch (command.opcode) {
+        case 0xAAU: command.kind = AGINTI_CMD_LEGACY_ACQUIRE; break;
+        case 0xFFU: command.kind = AGINTI_CMD_LEGACY_CONFIGURE; break;
         case 0x08U: command.kind = AGINTI_CMD_LEGACY_EEPROM_WRITE; break;
         case 0x09U: command.kind = AGINTI_CMD_LEGACY_EEPROM_READ; break;
         case 0x10U: command.kind = AGINTI_CMD_LEGACY_CAL_READ; break;
         case 0x11U: command.kind = AGINTI_CMD_LEGACY_CAL_WRITE; break;
-        default: command.kind = AGINTI_CMD_LEGACY_ACQUIRE; break;
+        default: command.kind = AGINTI_CMD_NONE; break;
       }
-      (void)queue_push(parser, &command);
+      if (command.kind == AGINTI_CMD_NONE) ++parser->malformed_packets;
+      else (void)queue_push(parser, &command);
       discard_prefix(parser, 9U);
       continue;
     }
@@ -176,8 +198,8 @@ void aginti_protocol_parser_feed(aginti_protocol_parser_t *parser,
       discard_prefix(parser, 1U);
     }
     parser->input[parser->input_bytes++] = data[i];
-    parse_available(parser);
   }
+  parse_available(parser);
 }
 
 bool aginti_protocol_parser_pop(aginti_protocol_parser_t *parser,
@@ -209,4 +231,3 @@ size_t aginti_v2_build_reply(uint8_t *destination, size_t capacity,
   write_le32(&destination[16], aginti_crc32(destination, total, 0U));
   return total;
 }
-

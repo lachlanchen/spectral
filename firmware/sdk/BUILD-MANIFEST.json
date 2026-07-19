@@ -1,9 +1,92 @@
-﻿{
-    "schema":  "aginti.c12880.build-manifest.v1",
-    "generated_utc":  "2026-07-19T14:42:18.7267870Z",
+{
+    "schema":  "aginti.c12880.firmware-suite.v2",
+    "generated_utc":  "2026-07-19T16:30:38.0905857Z",
     "state":  "COMPILED_NOT_FLASHED",
     "target":  "STM32H743xx",
-    "compiler":  "Arm GNU Toolchain 14.2.1",
+    "compiler":  "arm-none-eabi-gcc.exe (Arm GNU Toolchain 14.2.Rel1 (Build arm-14.52)) 14.2.1 20241119",
+    "components":  {
+                       "reconstruction":  {
+                                              "version":  "0.1.0",
+                                              "compatibility":  "clean-room behavioral reconstruction; not byte-identical",
+                                              "target":  "aginti_c12880_reconstruction_h743",
+                                              "artifacts":  [
+                                                                {
+                                                                    "path":  "firmware/sdk/build-suite/aginti_c12880_reconstruction_h743.elf",
+                                                                    "bytes":  221920,
+                                                                    "sha256":  "1FB0D73A3FC1E4841B4B85A5880C1AB5CA9548DF02FF77846530D192E2CB43CB"
+                                                                },
+                                                                {
+                                                                    "path":  "firmware/sdk/build-suite/aginti_c12880_reconstruction_h743.bin",
+                                                                    "bytes":  47704,
+                                                                    "sha256":  "4212AD58B37D372C6D524691802BDDA41F953A0D9EE5FFD4B9D4B9BFC48AA389"
+                                                                },
+                                                                {
+                                                                    "path":  "firmware/sdk/build-suite/aginti_c12880_reconstruction_h743.hex",
+                                                                    "bytes":  134264,
+                                                                    "sha256":  "035F6D23EF71194F051D97C5806BCD14333DC775191D27B4EA1BD135306FB589"
+                                                                },
+                                                                {
+                                                                    "path":  "firmware/sdk/build-suite/aginti_c12880_reconstruction_h743.map",
+                                                                    "bytes":  335991,
+                                                                    "sha256":  "87A2DA0A862D53961012215BACF4B101AC4068C26F3140DC7AAB835A86D97136"
+                                                                }
+                                                            ]
+                                          },
+                       "performance":  {
+                                           "version":  "0.3.0",
+                                           "profile":  "TIM2 GPIO DMA + ADC DMA + USB CDC + legacy/V2 protocols",
+                                           "target":  "aginti_c12880_h743",
+                                           "artifacts":  [
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_c12880_h743.elf",
+                                                                 "bytes":  286408,
+                                                                 "sha256":  "37F862F3D7EF79ACFD07FE613038647C3065C8B376E426AFDD4CFEAE2571FAC7"
+                                                             },
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_c12880_h743.bin",
+                                                                 "bytes":  55136,
+                                                                 "sha256":  "2481C4558D8C1D4DBE829C3FBCE3D6A688A88C80B56D348CF46FE78F2E54C6BC"
+                                                             },
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_c12880_h743.hex",
+                                                                 "bytes":  155173,
+                                                                 "sha256":  "89E4216C8A497537B856600105F28C7ED25E818507A499E7BF2598115A6A8A3D"
+                                                             },
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_c12880_h743.map",
+                                                                 "bytes":  319294,
+                                                                 "sha256":  "434D64CF04A9A8FD7008900C74ED1011450A0A9960D5A31ADAB706A6B0291F32"
+                                                             }
+                                                         ]
+                                       },
+                       "coordinator":  {
+                                           "version":  "0.1.0",
+                                           "profile":  "dual-lamp PWM, telemetry, LUT, cooling, and trigger coordinator",
+                                           "target":  "aginti_dual_h7_coordinator",
+                                           "artifacts":  [
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_dual_h7_coordinator.elf",
+                                                                 "bytes":  184652,
+                                                                 "sha256":  "94171A8DFA6E548E37AB016BBF65E2EB5B251224886B198F45129079E7B6B1CE"
+                                                             },
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_dual_h7_coordinator.bin",
+                                                                 "bytes":  31924,
+                                                                 "sha256":  "0F780B30385063829CD525FF858D75232F22D4B49DAC07250015B5DC8A1494F4"
+                                                             },
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_dual_h7_coordinator.hex",
+                                                                 "bytes":  89857,
+                                                                 "sha256":  "BA51C10DD94E26B2D0E6A58B0C7228A9A25EFD28B3C832E9E170173DCA7F05EB"
+                                                             },
+                                                             {
+                                                                 "path":  "firmware/sdk/build-suite/aginti_dual_h7_coordinator.map",
+                                                                 "bytes":  335166,
+                                                                 "sha256":  "E7DD2F535184C803F5C1BC377653F281D48E5A4957851D41D426B4DC9A45E2B7"
+                                                             }
+                                                         ]
+                                       }
+                   },
     "dependencies":  {
                          "stm32h7xx_hal_driver":  "c5e70527126710a6415929ff10c1fd1f40394b1e",
                          "cmsis_device_h7":  "de8243d2c15f87936f28a49fcd9e6f5ba10fc233",
@@ -15,55 +98,6 @@
                                            "sha256":  "67F1F6C421D56C2077D5A3F7417AA6F5213A2791D0C63AE5DAFBDBDF461764B4",
                                            "published":  false
                                        },
-    "dma":  [
-                {
-                    "path":  "firmware/sdk/build-dma/aginti_c12880_h743.elf",
-                    "bytes":  286272,
-                    "sha256":  "589B57F19D35493CD053E441C6584E4DAF9E1E82F6B831B5F5E446FD0759D54F"
-                },
-                {
-                    "path":  "firmware/sdk/build-dma/aginti_c12880_h743.bin",
-                    "bytes":  54928,
-                    "sha256":  "FDDBE9775093AE0CB4D905E25B6F4DCCFBB07A1371C2A4168751FCE4F13B8F1F"
-                },
-                {
-                    "path":  "firmware/sdk/build-dma/aginti_c12880_h743.hex",
-                    "bytes":  154588,
-                    "sha256":  "20867381C35494246B6C31B0EB07453BF0D744A698EF112EE10AC904859AFD1F"
-                },
-                {
-                    "path":  "firmware/sdk/build-dma/aginti_c12880_h743.map",
-                    "bytes":  316251,
-                    "sha256":  "689DE50DB55B092E1365F4E811DA83E58C183BFCFFE8C54B13C18C260941EAEB"
-                }
-            ],
-    "direct":  [
-                   {
-                       "path":  "firmware/sdk/build-direct/aginti_c12880_h743.elf",
-                       "bytes":  222596,
-                       "sha256":  "9F9B816911A3A7B08988D34269DFDA79DCA6DC626E0D217D569819D57CB34303"
-                   },
-                   {
-                       "path":  "firmware/sdk/build-direct/aginti_c12880_h743.bin",
-                       "bytes":  48420,
-                       "sha256":  "D06B995409A3260A240B23323F4B1EB86FC828F4D833A95481868BC5EBA7A603"
-                   },
-                   {
-                       "path":  "firmware/sdk/build-direct/aginti_c12880_h743.hex",
-                       "bytes":  136281,
-                       "sha256":  "B09AD92E7F56EC2E8273CD4DA9C950584086825E75B2EC2B38C2B7D37D256FC8"
-                   },
-                   {
-                       "path":  "firmware/sdk/build-direct/aginti_c12880_h743.map",
-                       "bytes":  314531,
-                       "sha256":  "50DB9C7F3DD83EB39B9A451F61A6156011715FBCBA702BA0D3D696842ECCDD1D"
-                   }
-               ],
-    "documentation":  {
-                          "path":  "publications/c12880_firmware_sdk/c12880_firmware_sdk_cn.pdf",
-                          "bytes":  246320,
-                          "sha256":  "4736515E0F43317C1C28954F6AEA2C2CC13E10C768773E9AC6556C1F1944A7DC"
-                      },
     "safety":  {
                    "flashed":  false,
                    "erased":  false,

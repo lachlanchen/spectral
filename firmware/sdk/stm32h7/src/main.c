@@ -107,9 +107,18 @@ static void handle_command(const aginti_command_t *command) {
       aginti_c12880_request_single(&device);
       break;
     }
+    case AGINTI_CMD_LEGACY_CONFIGURE: {
+      aginti_c12880_config_t config = device.config;
+      config.frame_format = AGINTI_FRAME_LEGACY;
+      config.output_mode = command->output_mode;
+      if (command->exposure_clocks != 0U)
+        config.exposure_clocks = command->exposure_clocks;
+      (void)aginti_c12880_configure(&device, &config);
+      break;
+    }
     case AGINTI_CMD_LEGACY_EEPROM_READ:
       aginti_c12880_stop_stream(&device);
-      if (board_eeprom_read(0U, control_tx, 4096U)) control_tx_bytes = 4096U;
+      if (board_eeprom_read(0U, control_tx, 1024U)) control_tx_bytes = 1024U;
       break;
     case AGINTI_CMD_LEGACY_CAL_READ:
       aginti_c12880_stop_stream(&device);
@@ -120,13 +129,13 @@ static void handle_command(const aginti_command_t *command) {
       /* Deliberately read-only: calibration writes require an explicit future unlock. */
       break;
     case AGINTI_CMD_V2_HELLO: {
-      static const char name[] = "AgInTi C12880MA clean-room firmware 0.2";
+      static const char name[] = "AgInTi C12880MA performance firmware 0.3";
       reply_v2(command, 0U, name, (uint16_t)sizeof(name));
       break;
     }
     case AGINTI_CMD_V2_GET_CAPS: {
       const capabilities_t caps = {
-          0x00020000U, 100000U, 1000000U, 2000000U, 11U, 2000000U,
+          0x00030000U, 100000U, 1000000U, 5000000U, 3U, 2000000U,
           AGINTI_C12880_ACTIVE_PIXELS, AGINTI_C12880_RAW_SAMPLES,
           AGINTI_C12880_LEGACY_FRAME_BYTES, AGINTI_C12880_V2_FRAME_BYTES,
           0x0000001FU};
@@ -216,4 +225,3 @@ int main(void) {
     aginti_c12880_poll(&device);
   }
 }
-

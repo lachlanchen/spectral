@@ -28,6 +28,7 @@ typedef enum {
   AGINTI_CMD_NONE = 0,
   AGINTI_CMD_IDENTITY,
   AGINTI_CMD_LEGACY_ACQUIRE,
+  AGINTI_CMD_LEGACY_CONFIGURE,
   AGINTI_CMD_LEGACY_EEPROM_WRITE,
   AGINTI_CMD_LEGACY_EEPROM_READ,
   AGINTI_CMD_LEGACY_CAL_READ,
@@ -129,4 +130,3 @@ size_t aginti_v2_build_reply(uint8_t *destination, size_t capacity,
 #endif
 
 #endif
-

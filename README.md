@@ -18,6 +18,15 @@
 
 An independent acquisition and visualization application for the Hamamatsu C12880MA and its supplied USB controller. It reproduces the working vendor transport while keeping acquisition independent from GUI refresh, validating every 288-pixel frame, recording raw spectra, and exposing diagnostics for later system integration.
 
+## Versioned application and firmware suite
+
+The desktop GUI and web application remain separately tagged at `0.1.0`. The
+firmware SDK now builds three STM32H743 images: a conservative vendor-compatible
+clean-room reconstruction, a DMA-oriented maximum-performance implementation,
+and an independent dual-H7 light coordinator. The immutable original 2 MiB
+read-back remains private; only its SHA-256 is published. See
+[`RELEASE-MANIFEST.json`](RELEASE-MANIFEST.json) for the component-to-tag map.
+
 ## Verified hardware protocol
 
 The vendor GUI was traced from process startup while displaying a live spectrum. The controller identifies itself by returning `c12880` at 256,000 baud, then uses 1,500,000-baud, 8-N-1 acquisition. A 10 us request is `FF AA 01 00 00 00 32 0D 0A`; each response is exactly 590 bytes: a 12-byte reserved header, 576 bytes for 288 little-endian 16-bit pixels, and a 2-byte trailer. On this workstation the controller is STM32 VCP `0483:5740` on `COM3`; the CH343 on `COM5` is unrelated.

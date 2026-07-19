@@ -5,6 +5,9 @@
 #ifndef AGINTI_CAPTURE_DMA
 #define AGINTI_CAPTURE_DMA 1
 #endif
+#ifndef AGINTI_PERFORMANCE_ADC
+#define AGINTI_PERFORMANCE_ADC 0
+#endif
 
 #define C12880_PRE_CLOCKS 12U
 #define C12880_DUMMY_CLOCKS_DIRECT 91U
@@ -172,7 +175,11 @@ static bool adc_dma_init(void) {
   __HAL_LINKDMA(&hadc1, DMA_Handle, hdma_adc1);
 
   hadc1.Instance = ADC1;
+#if AGINTI_PERFORMANCE_ADC
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+#else
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV2;
+#endif
   hadc1.Init.Resolution = ADC_RESOLUTION_16B;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -197,7 +204,11 @@ static bool adc_dma_init(void) {
   ADC_ChannelConfTypeDef channel = {0};
   channel.Channel = ADC_CHANNEL_16;
   channel.Rank = ADC_REGULAR_RANK_1;
+#if AGINTI_PERFORMANCE_ADC
+  channel.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+#else
   channel.SamplingTime = ADC_SAMPLETIME_16CYCLES_5;
+#endif
   channel.SingleDiff = ADC_SINGLE_ENDED;
   channel.OffsetNumber = ADC_OFFSET_NONE;
   channel.Offset = 0U;

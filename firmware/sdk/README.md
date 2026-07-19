@@ -18,6 +18,18 @@ to the controller. Before any first flash, preserve all of the following:
 
 The firmware deliberately implements EEPROM reads but no EEPROM writes.
 
+## Versioned firmware set
+
+Three independent source images are maintained:
+
+- `reconstruction_h743/`: vendor-compatible, direct/blocking clean-room rewrite;
+- `stm32h7/`: maximum-throughput TIM2/GPIO DMA and ADC DMA implementation;
+- `coordinator_h743/`: dual-lamp modulation, telemetry, cooling, LUT, and trigger controller.
+
+The exact 2 MiB vendor read-back remains private and ignored. Its public
+SHA-256 is recorded in `BUILD-MANIFEST.json`. Build all three source images
+without touching hardware with `./scripts/build_c12880_firmware_suite.ps1`.
+
 ## Recovered board contract
 
 | Function | STM32H743 signal |
@@ -41,10 +53,11 @@ The firmware deliberately implements EEPROM reads but no EEPROM writes.
 - No dynamic allocation in the application data path.
 - Safe outputs and a non-returning panic path.
 
-The default clock is 1 MHz. The software-configurable range is 100 kHz to
-2 MHz until bench validation establishes a reliable ADC timing margin. The
-C12880MA's 5 MHz limit is a sensor limit, not a guarantee for this complete
-16-bit acquisition chain.
+The performance target defaults to 1 MHz and exposes 100 kHz to 5 MHz. The
+upper endpoint uses the shortest ADC sample window and represents a compile-
+validated hardware ceiling candidate, not a measured guarantee. The
+reconstruction uses the observed 5 MHz integration-tick basis with the direct
+capture path.
 
 ## Fetch and build
 

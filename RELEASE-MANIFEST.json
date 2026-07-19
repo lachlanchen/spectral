@@ -1,0 +1,37 @@
+{
+  "schema": "aginti.spectrometer.release.v1",
+  "release": "0.3.0",
+  "components": {
+    "desktop_gui": {
+      "version": "0.1.0",
+      "tag": "app/desktop-v0.1.0",
+      "source": "src/spectral/gui.py"
+    },
+    "web_app": {
+      "version": "0.1.0",
+      "tag": "app/web-v0.1.0",
+      "source": "src/spectral/web/"
+    },
+    "firmware_reconstruction": {
+      "version": "0.1.0",
+      "tag": "firmware/reconstruction-v0.1.0",
+      "source": "firmware/sdk/reconstruction_h743/"
+    },
+    "firmware_performance": {
+      "version": "0.3.0",
+      "tag": "firmware/performance-v0.3.0",
+      "source": "firmware/sdk/stm32h7/"
+    },
+    "firmware_coordinator": {
+      "version": "0.1.0",
+      "tag": "firmware/coordinator-v0.1.0",
+      "source": "firmware/sdk/coordinator_h743/"
+    }
+  },
+  "private_original_backup": {
+    "bytes": 2097152,
+    "sha256": "67F1F6C421D56C2077D5A3F7417AA6F5213A2791D0C63AE5DAFBDBDF461764B4",
+    "published": false
+  },
+  "suite_tag": "release/firmware-suite-v0.3.0"
+}
