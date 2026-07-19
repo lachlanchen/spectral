@@ -1160,6 +1160,7 @@ def run_gui(
         api_host=api_host,
         api_port=api_port,
     )
+    window.auto_exposure.setChecked(True)
     window.setWindowIcon(QtGui.QIcon(icon_path))
     window.show()
     return app.exec()
