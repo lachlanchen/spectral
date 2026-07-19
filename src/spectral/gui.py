@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from collections import deque
+import ctypes
 import csv
 from importlib import resources
 from pathlib import Path
+import sys
 import threading
 import time
 
@@ -21,6 +23,23 @@ from .protocol import DEFAULT_EXPOSURE_MS, DEFAULT_OUTPUT_MASK, SpectrumFrame
 from .recording import CsvRecorder
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+WINDOWS_APP_ID = "art.lazying.aginti.spectrum-studio"
+
+
+def _application_icon_path() -> str:
+    resource_root = resources.files("spectral").joinpath("resources")
+    windows_icon = resource_root.joinpath("icon.ico")
+    icon = windows_icon if windows_icon.is_file() else resource_root.joinpath("icon.svg")
+    return str(icon)
+
+
+def _configure_windows_app_identity() -> None:
+    if sys.platform != "win32":
+        return
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(WINDOWS_APP_ID)
+    except (AttributeError, OSError):
+        pass
 
 
 class LatestFrame:
@@ -680,11 +699,13 @@ class SpectrumWindow(QtWidgets.QMainWindow):
         finite = counts[np.isfinite(counts)]
         if not finite.size:
             return 0.0, 1.0
-        low = float(np.percentile(finite, 1.0))
-        high = float(np.percentile(finite, 99.5))
-        span = max(1.0, high - low, abs(high) * 0.02)
-        floor = max(0.0, low - span * 0.10)
-        ceiling = high + span * 0.12
+        low = float(np.min(finite))
+        high = float(np.max(finite))
+        span = max(1.0, high - low, abs(high) * 0.02, abs(low) * 0.02)
+        floor = low - span * 0.04
+        if low >= 0.0:
+            floor = max(0.0, floor)
+        ceiling = high + max(1.0, span * 0.08, abs(high) * 0.01)
         return floor, max(floor + 1.0, ceiling)
 
     def _set_y_limit_controls(self, floor: float, ceiling: float) -> None:
@@ -1025,8 +1046,18 @@ class SpectrumWindow(QtWidgets.QMainWindow):
             if self.y_ceiling <= 1.0:
                 self.y_floor, self.y_ceiling = target_floor, target_ceiling
             else:
-                self.y_floor = 0.65 * self.y_floor + 0.35 * target_floor
-                self.y_ceiling = 0.65 * self.y_ceiling + 0.35 * target_ceiling
+                # Attack immediately so a brighter frame is never clipped. Release
+                # slowly so small frame-to-frame changes do not pump the axis.
+                self.y_floor = (
+                    target_floor
+                    if target_floor < self.y_floor
+                    else 0.92 * self.y_floor + 0.08 * target_floor
+                )
+                self.y_ceiling = (
+                    target_ceiling
+                    if target_ceiling > self.y_ceiling
+                    else 0.92 * self.y_ceiling + 0.08 * target_ceiling
+                )
             if self.y_ceiling - self.y_floor < 1.0:
                 self.y_ceiling = self.y_floor + 1.0
             self._set_y_limit_controls(self.y_floor, self.y_ceiling)
@@ -1044,8 +1075,13 @@ class SpectrumWindow(QtWidgets.QMainWindow):
         self.signal_card.value.setText(f"{summary.peak_counts:,.0f}")
         self.integral_card.value.setText(f"{summary.integrated_counts_nm / 1e6:.2f} M")
         self.frame_label.setText(f"Frame {frame.sequence} / {frame.source}")
+        display_clipped = int(np.count_nonzero(
+            np.isfinite(counts)
+            & ((counts < self.y_floor) | (counts > self.y_ceiling))
+        ))
         self.saturation_label.setText(
-            f"Saturation {summary.saturated_pixels}/288"
+            f"ADC saturation {summary.saturated_pixels}/288  |  "
+            f"Display clip {display_clipped}/288"
         )
 
     def capture_dark(self) -> None:
@@ -1110,18 +1146,20 @@ def run_gui(
     api_port: int = 8766,
 ) -> int:
     pg.setConfigOptions(antialias=False)
+    _configure_windows_app_identity()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     app.setApplicationName("AgInTi Spectrum Studio")
+    app.setApplicationDisplayName("AgInTi Spectrum Studio")
     app.setOrganizationName("LazyingArt")
     app.setStyle("Fusion")
-    icon_path = resources.files("spectral").joinpath("resources", "icon.svg")
-    app.setWindowIcon(QtGui.QIcon(str(icon_path)))
+    icon_path = _application_icon_path()
+    app.setWindowIcon(QtGui.QIcon(icon_path))
     window = SpectrumWindow(
         requested_port=requested_port,
         demo_only=demo_only,
         api_host=api_host,
         api_port=api_port,
     )
-    window.setWindowIcon(QtGui.QIcon(str(icon_path)))
+    window.setWindowIcon(QtGui.QIcon(icon_path))
     window.show()
     return app.exec()

@@ -86,7 +86,7 @@ function updateStatus(state) {
       ? `${faultCode} / last frame ${state.frame.age_seconds?.toFixed(1) ?? "--"} s ago`
       : `${faultCode} / no validated frame`
     : state.frame ? `Frame ${state.frame.sequence} / ${state.frame.source}` : "No validated frame";
-  $("saturationLabel").textContent = `Saturation ${summary?.saturated_pixels ?? "--"}/288`;
+  $("saturationLabel").textContent = `ADC saturation ${summary?.saturated_pixels ?? "--"}/288 / Display clip --`;
   $("statusLine").textContent = disconnected
     ? `${faultCode} / ${fault?.detail || "hardware disconnected"} / invalid ${state.frame_health?.invalid_frames ?? 0}`
     : `API connected / raw acquisition ${Math.round(state.acquisition?.fps || 0)} fps / web render 20 fps`;
@@ -125,9 +125,24 @@ function drawSpectrum() {
   ctx.fillStyle = "#fffdf8";
   ctx.fillRect(0, 0, width, height);
   const xMin = 340, xMax = 850;
+  const wavelengths = spectrum?.wavelengths_nm || [];
+  const counts = spectrum?.counts || [];
   let yMin = instrument?.y_scale?.minimum ?? 0;
   let yMax = instrument?.y_scale?.maximum ?? 65535;
   if (!(yMax > yMin)) yMax = yMin + 1;
+  const finiteCounts = counts.filter(Number.isFinite);
+  if (instrument?.y_scale?.auto && finiteCounts.length) {
+    const dataMin = Math.min(...finiteCounts);
+    const dataMax = Math.max(...finiteCounts);
+    const span = Math.max(1, dataMax - dataMin, Math.abs(dataMax) * .02, Math.abs(dataMin) * .02);
+    const safeMin = dataMin >= 0 ? Math.max(0, dataMin - span * .04) : dataMin - span * .04;
+    const safeMax = dataMax + Math.max(1, span * .08, Math.abs(dataMax) * .01);
+    yMin = Math.min(yMin, safeMin);
+    yMax = Math.max(yMax, safeMax);
+  }
+  const displayClipped = finiteCounts.filter((value) => value < yMin || value > yMax).length;
+  const adcSaturated = instrument?.spectrum?.saturated_pixels ?? "--";
+  $("saturationLabel").textContent = `ADC saturation ${adcSaturated}/288 / Display clip ${displayClipped}/288`;
   const xFor = (nm) => margin.left + ((nm - xMin) / (xMax - xMin)) * plotW;
   const yFor = (value) => margin.top + (1 - (value - yMin) / (yMax - yMin)) * plotH;
 
@@ -160,9 +175,11 @@ function drawSpectrum() {
   ctx.lineWidth = 1.2*dpr;
   ctx.beginPath(); ctx.moveTo(margin.left, margin.top); ctx.lineTo(margin.left, margin.top+plotH); ctx.lineTo(margin.left+plotW, margin.top+plotH); ctx.stroke();
 
-  const wavelengths = spectrum?.wavelengths_nm || [];
-  const counts = spectrum?.counts || [];
   if (wavelengths.length && wavelengths.length === counts.length) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(margin.left, margin.top, plotW, plotH);
+    ctx.clip();
     ctx.beginPath();
     ctx.moveTo(xFor(wavelengths[0]), yFor(yMin));
     wavelengths.forEach((nm, i) => ctx.lineTo(xFor(nm), yFor(counts[i])));
@@ -181,6 +198,15 @@ function drawSpectrum() {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
     ctx.stroke();
+    ctx.restore();
+  }
+
+  if (displayClipped > 0) {
+    ctx.fillStyle = "#a63f31";
+    ctx.font = `700 ${11*dpr}px "Cascadia Mono", monospace`;
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText(`DISPLAY CLIP ${displayClipped}/288`, margin.left + plotW - 8*dpr, margin.top + 7*dpr);
   }
 
   ctx.fillStyle = "#344f57";
