@@ -17,3 +17,5 @@ references/vendor/*.rar
 measurements/*
 !measurements/.gitkeep
 
+# Read-back firmware and reverse-engineering artifacts are private vendor data.
+firmware/private/

@@ -1,0 +1,14 @@
+{
+  "created_local": "2026-07-19T20:54:48+08:00",
+  "target": "STM32H74x/75x",
+  "core": "Cortex-M7 r1p1",
+  "target_voltage_v": 3.202654,
+  "flash_base": "0x08000000",
+  "flash_bytes": 2097152,
+  "flash_banks": 2,
+  "sha256": "67F1F6C421D56C2077D5A3F7417AA6F5213A2791D0C63AE5DAFBDBDF461764B4",
+  "initial_msp": "0x24007F28",
+  "reset_vector": "0x08100025",
+  "write_operations": 0,
+  "private_artifacts_committed": false
+}
