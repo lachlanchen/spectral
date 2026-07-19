@@ -81,6 +81,22 @@ aginti-c12880 --port COM7 stream --exposure-us 1000 --clock-hz 1000000
 V2 continuous streaming avoids one host request per frame. The compatibility
 mode remains available for the existing 590-byte request-response protocol.
 
+## Dual-H7 synchronized controller
+
+`coordinator_h743/` is a second, independent firmware target for the Geek
+STM32H743IIT6 board. It keeps the spectrometer MCU dedicated to acquisition
+while the coordinator owns dual-lamp PWM, slow optical/electrical telemetry,
+cooling protection, LUT execution, and the acquisition trigger.
+
+```powershell
+./scripts/build_dual_h7_coordinator.ps1
+python firmware/sdk/tools/coordinator_cli.py --port COM7 status
+```
+
+The coordinator is also compile-validated only. The build script never calls
+OpenOCD and never programs either board. Wiring, commands, timing limits, and
+the calibration workflow are documented in `docs/dual-h7-control.md`.
+
 ## Current validation boundary
 
 Compilation establishes source and link consistency. It does not establish
@@ -88,4 +104,3 @@ signal polarity, EEPROM timing, analog settling, ADC phase, optical calibration,
 USB throughput, or hardware stability. The staged first-flash and oscilloscope
 checks are specified in `docs/architecture.md` and the Chinese monograph under
 `publications/c12880_firmware_sdk/`.
-

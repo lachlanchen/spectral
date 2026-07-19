@@ -43,6 +43,8 @@ set(HAL_SOURCES
   ${STM32_HAL_ROOT}/Src/stm32h7xx_hal_adc_ex.c
   ${STM32_HAL_ROOT}/Src/stm32h7xx_hal_tim.c
   ${STM32_HAL_ROOT}/Src/stm32h7xx_hal_tim_ex.c
+  ${STM32_HAL_ROOT}/Src/stm32h7xx_hal_uart.c
+  ${STM32_HAL_ROOT}/Src/stm32h7xx_hal_uart_ex.c
   ${STM32_HAL_ROOT}/Src/stm32h7xx_ll_usb.c)
 
 set(USB_SOURCES
@@ -106,4 +108,47 @@ add_custom_command(TARGET aginti_c12880_h743 POST_BUILD
   COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:aginti_c12880_h743>
           ${CMAKE_CURRENT_BINARY_DIR}/aginti_c12880_h743.bin
   COMMAND ${CMAKE_SIZE} $<TARGET_FILE:aginti_c12880_h743>
+  VERBATIM)
+
+add_executable(aginti_dual_h7_coordinator EXCLUDE_FROM_ALL
+  coordinator_h743/src/main.c
+  coordinator_h743/src/coordinator.c
+  coordinator_h743/src/coordinator_board.c
+  ${STM32_CMSIS_DEVICE_ROOT}/Source/Templates/system_stm32h7xx.c
+  ${STM32_CMSIS_DEVICE_ROOT}/Source/Templates/gcc/startup_stm32h743xx.s
+  ${HAL_SOURCES})
+
+target_include_directories(aginti_dual_h7_coordinator PRIVATE
+  coordinator_h743/include
+  stm32h7/include)
+target_include_directories(aginti_dual_h7_coordinator SYSTEM PRIVATE
+  ${STM32_HAL_ROOT}/Inc
+  ${STM32_HAL_ROOT}/Inc/Legacy
+  ${STM32_CMSIS_DEVICE_ROOT}/Include
+  ${CMSIS_CORE_ROOT}/CMSIS/Core/Include)
+
+target_compile_definitions(aginti_dual_h7_coordinator PRIVATE
+  STM32H743xx USE_HAL_DRIVER HAL_UART_MODULE_ENABLED HSE_VALUE=25000000U)
+target_compile_options(aginti_dual_h7_coordinator PRIVATE
+  -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard
+  -ffunction-sections -fdata-sections -fno-common
+  -Wall -Wextra -Wshadow -Wconversion -Wdouble-promotion
+  $<$<CONFIG:Debug>:-Og;-g3>
+  $<$<NOT:$<CONFIG:Debug>>:-O3;-g1>)
+target_link_options(aginti_dual_h7_coordinator PRIVATE
+  -mcpu=cortex-m7 -mthumb -mfpu=fpv5-d16 -mfloat-abi=hard
+  -T${CMAKE_CURRENT_SOURCE_DIR}/stm32h7/linker/STM32H743II_FLASH.ld
+  -Wl,--gc-sections
+  -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/aginti_dual_h7_coordinator.map
+  -Wl,--print-memory-usage
+  --specs=nano.specs --specs=nosys.specs)
+target_link_libraries(aginti_dual_h7_coordinator PRIVATE m c)
+set_target_properties(aginti_dual_h7_coordinator PROPERTIES SUFFIX ".elf")
+
+add_custom_command(TARGET aginti_dual_h7_coordinator POST_BUILD
+  COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:aginti_dual_h7_coordinator>
+          ${CMAKE_CURRENT_BINARY_DIR}/aginti_dual_h7_coordinator.hex
+  COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:aginti_dual_h7_coordinator>
+          ${CMAKE_CURRENT_BINARY_DIR}/aginti_dual_h7_coordinator.bin
+  COMMAND ${CMAKE_SIZE} $<TARGET_FILE:aginti_dual_h7_coordinator>
   VERBATIM)
