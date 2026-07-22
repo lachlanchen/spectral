@@ -30,6 +30,12 @@ The exact 2 MiB vendor read-back remains private and ignored. Its public
 SHA-256 is recorded in `BUILD-MANIFEST.json`. Build all three source images
 without touching hardware with `./scripts/build_c12880_firmware_suite.ps1`.
 
+> **Hardware warning (2026-07-22):** performance firmware `0.3.0` programs and
+> verifies but fails USB enumeration. Do not flash it. The original firmware
+> was restored and its full 2 MiB readback matched exactly. See
+> `HARDWARE-VALIDATION.json` and
+> `docs/performance-firmware-first-flash-20260722.md`.
+
 ## Recovered board contract
 
 | Function | STM32H743 signal |

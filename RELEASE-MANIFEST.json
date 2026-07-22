@@ -20,7 +20,9 @@
     "firmware_performance": {
       "version": "0.3.0",
       "tag": "firmware/performance-v0.3.0",
-      "source": "firmware/sdk/stm32h7/"
+      "source": "firmware/sdk/stm32h7/",
+      "hardware_status": "REJECTED_DO_NOT_FLASH",
+      "validation": "firmware/sdk/HARDWARE-VALIDATION.json"
     },
     "firmware_coordinator": {
       "version": "0.1.0",
@@ -31,7 +33,9 @@
   "private_original_backup": {
     "bytes": 2097152,
     "sha256": "67F1F6C421D56C2077D5A3F7417AA6F5213A2791D0C63AE5DAFBDBDF461764B4",
-    "published": false
+    "published": false,
+    "restore_tested": true,
+    "post_restore_readback_match": true
   },
   "suite_tag": "release/firmware-suite-v0.3.0"
 }

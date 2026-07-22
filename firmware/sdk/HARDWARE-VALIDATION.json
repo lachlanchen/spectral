@@ -1,0 +1,53 @@
+{
+  "schema": "aginti.c12880.hardware-validation.v1",
+  "tested_at": "2026-07-22T20:00:00+08:00",
+  "performance_firmware": {
+    "version": "0.3.0",
+    "bin_sha256": "2481C4558D8C1D4DBE829C3FBCE3D6A688A88C80B56D348CF46FE78F2E54C6BC",
+    "programmed": true,
+    "openocd_verified": true,
+    "target_voltage_v": 3.204,
+    "usb_enumerated": false,
+    "identity_test": "not_run",
+    "frame_test": "not_run",
+    "disposition": "REJECTED_DO_NOT_FLASH",
+    "failure": "USB device did not enumerate; no C12880 COM port was created"
+  },
+  "original_firmware_restore": {
+    "image_bytes": 2097152,
+    "image_sha256": "67F1F6C421D56C2077D5A3F7417AA6F5213A2791D0C63AE5DAFBDBDF461764B4",
+    "programmed": true,
+    "openocd_verified": true,
+    "post_restore_readback_sha256": "67F1F6C421D56C2077D5A3F7417AA6F5213A2791D0C63AE5DAFBDBDF461764B4",
+    "exact_readback_match": true,
+    "usb_vid_pid": "0483:5740",
+    "usb_port": "COM3",
+    "identity_valid": true,
+    "correction_bytes": 1024,
+    "correction_nonzero_bytes": 1024,
+    "frame_bytes": 590,
+    "pixels": 288
+  },
+  "restored_application_validation": {
+    "samples": 30,
+    "all_live": true,
+    "all_fresh": true,
+    "all_288_pixels": true,
+    "sequence_span": 402,
+    "frame_age_max_s": 0.065,
+    "fps_min": 102.692,
+    "fps_max": 103.839,
+    "counts_min": 1397.817,
+    "counts_max": 51074.675,
+    "saturated_pixels_max": 0,
+    "peak_nm_min": 430.627,
+    "peak_nm_max": 435.958,
+    "web_http_status": 200,
+    "desktop_gui_started": true
+  },
+  "safety": {
+    "option_bytes_modified": false,
+    "external_eeprom_modified": false,
+    "original_firmware_current": true
+  }
+}
